@@ -25,8 +25,8 @@ import javax.swing.event.MouseInputAdapter;
 public class App extends MouseInputAdapter implements GLEventListener, KeyListener {
     private final float ASPECT_RATIO = 1.83f; // width/height
     private final float DNEAR = 0.01f;
-    private final float DFAR = 10f;
-    private final float THETA;
+    private final float DFAR = 1000f;
+    private final float THETA = 60;
     
     private final Pipeline pipeline;
     private final Scene scene;
@@ -48,7 +48,7 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
     private double counter;
     private double angle;
     private float goForward;
-    
+    private float goRight;
     
     
     public App() {
@@ -61,10 +61,8 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
         
         dx = dy = 0;
         zoomFactor = 1.0f;
-        
-        /// Parametros da projecao perspectiva:
-        THETA = 60;     // 60 graus. Obs.: Aumentar o THETA => aumentar a JR
-        
+        goForward = -2.0f;
+        goRight = 0f;        
     }
 
     @Override
@@ -102,9 +100,9 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
         pipeline.getMatrix(Pipeline.MatrixType.VIEW).loadIdentity();
         
         pipeline.getMatrix(Pipeline.MatrixType.VIEW).lookAt(
-                goForward, 0.0f, zoomFactor,      // Po
-                0, 0, 0,                // Pref
-                0, 1, 0);               // View up
+                goRight, 0.0f, goForward-2.0f,       // Po
+                goRight, alpha, goForward,           // Pref
+                0, 1, 0);                            // View up
 //        pipeline.getMatrix(Pipeline.MatrixType.VIEW).scale(, 1, 1);
         pipeline.getMatrix(Pipeline.MatrixType.VIEW).rotate(-beta, 0, 1.0f, 0);
         pipeline.getMatrix(Pipeline.MatrixType.VIEW).rotate(-alpha, 1.0f, 0, 0);
@@ -138,11 +136,11 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
             case KeyEvent.VK_PAGE_DOWN://faz zoom-out
                 delta = delta * 1.1f;
                 break;
-            case KeyEvent.VK_UP://gira sobre o eixo-x
-                alpha = alpha - 5;
+            case KeyEvent.VK_UP://
+                alpha = alpha + 0.01f;
                 break;
-            case KeyEvent.VK_DOWN://gira sobre o eixo-x
-                alpha = alpha + 5;
+            case KeyEvent.VK_DOWN://
+                alpha = alpha - 0.01f;
                 break;
             case KeyEvent.VK_LEFT://gira sobre o eixo-y
                 beta = beta - 5;
@@ -152,12 +150,22 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
                 break;
             case KeyEvent.VK_W: //avança a camera = puxa o mundo
             {
-                goForward -= 0.05;
+                goForward += 0.05;
                 break;
             }
             case KeyEvent.VK_S: //recua a camera = empurra o mundo
             {
-                goForward += 0.03;
+                goForward -= 0.03;
+                break;
+            }
+            case KeyEvent.VK_A: //recua a camera = empurra o mundo
+            {
+                goRight += 0.03;
+                break;
+            }
+            case KeyEvent.VK_D: //recua a camera = empurra o mundo
+            {
+                goRight -= 0.03;
                 break;
             }
         }

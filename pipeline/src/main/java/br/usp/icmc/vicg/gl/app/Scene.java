@@ -47,13 +47,13 @@ public class Scene {
         try {
             sky.init(gl, pipeline.getShader());
             sky.unitize();
-//            sky.setInitialPosition(x, y, z, theta);
+            sky.setInitialPosition(0f, 0f, 0f, 0, 2f, 2f, 2f);
             sky.dump();
             
             // Inicialização das árvores:
             palmPeqA.init(gl, pipeline.getShader());
             palmPeqA.unitize();
-            palmPeqA.setInitialPosition(0, 0, 200, -90, 0.5f, 0.5f, 0.5f);
+            palmPeqA.setInitialPosition(0, 0, 0, -90, 0.5f, 0.5f, 0.5f);
             palmPeqA.dump();
             
             
@@ -79,13 +79,14 @@ public class Scene {
     // Draw all objects of scene
     public void display(GL3 gl) {
         
-////        gl.glDisable(GL3.GL_CULL_FACE); // Teoricamente nao era pra usar isso no ceu
+        gl.glDisable(GL3.GL_CULL_FACE); // Teoricamente nao era pra usar isso no ceu
 //        pipeline.getMatrix(Pipeline.MatrixType.MODEL).loadIdentity();
 //        pipeline.getMatrix(Pipeline.MatrixType.MODEL).scale(10, 10, 10);
 //        pipeline.getMatrix(Pipeline.MatrixType.MODEL).translate(0.75f, 0, 0);
 //        pipeline.bind();
-//        sky.draw();
-////        gl.glEnable(GL3.GL_CULL_FACE);
+        sky.setModelMatrix(pipeline);
+        sky.draw();
+        gl.glEnable(GL3.GL_CULL_FACE);
         
         this.drawPlants(gl);
         

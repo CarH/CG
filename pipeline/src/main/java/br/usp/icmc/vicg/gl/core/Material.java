@@ -16,12 +16,17 @@ public class Material {
   private int diffuseColorHandle;
   private int specularColorHandle;
   private int specularExponentHandle;
-
+  
+  //(New)
+  private float alpha;
+  private int alphaHandle;
+  
   public Material() {
     setAmbientColor(new float[]{0.2f, 0.2f, 0.2f, 1.0f});
     setDiffuseColor(new float[]{0.8f, 0.8f, 0.8f, 1.0f});
     setSpecularColor(new float[]{1.0f, 1.0f, 1.0f, 1.0f});
     setSpecularExponent(0);
+    setTransparency(1);
   }
 
   public final void setAmbientColor(float[] ambientColor) {
@@ -40,12 +45,17 @@ public class Material {
     this.specularExponent = expoent;
   }
 
+  public final void setTransparency(float alpha){
+    this.alpha = alpha;
+  }
+  
   public void init(GL3 gl, Shader shader) {
     this.gl = gl;
     this.ambientColorHandle = shader.getUniformLocation("u_material.ambientColor");
     this.diffuseColorHandle = shader.getUniformLocation("u_material.diffuseColor");
     this.specularColorHandle = shader.getUniformLocation("u_material.specularColor");
     this.specularExponentHandle = shader.getUniformLocation("u_material.specularExponent");
+    this.alphaHandle = shader.getUniformLocation("u_material.transparency");
   }
 
   public void bind() {
@@ -53,5 +63,6 @@ public class Material {
     gl.glUniform4fv(diffuseColorHandle, 1, Buffers.newDirectFloatBuffer(diffuseColor));
     gl.glUniform4fv(specularColorHandle, 1, Buffers.newDirectFloatBuffer(specularColor));
     gl.glUniform1f(specularExponentHandle, specularExponent);
+    gl.glUniform1f(alphaHandle, alpha);
   }
 }

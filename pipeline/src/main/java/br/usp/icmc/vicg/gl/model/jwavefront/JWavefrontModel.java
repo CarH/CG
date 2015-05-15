@@ -602,123 +602,135 @@ public class JWavefrontModel {
       try {
         in = new BufferedReader(new FileReader(file));
         Material material = null;
-
+        String token;
         String line;
         while ((line = in.readLine()) != null) {
           line = line.trim();
 
           if (line.length() > 0) {
             switch (line.charAt(0)) {
-              case '#': /* comment */
+                case '#': /* comment */
+                
+                  break;
+                case 'n': /* newmtl */
+                {
+                  tok = new StringTokenizer(line, " ");
+                  token = tok.nextToken(); //ignores newmtl
 
-                break;
-              case 'n': /* newmtl */
-
-                tok = new StringTokenizer(line, " ");
-                String token = tok.nextToken(); //ignores newmtl
-
-                //creating the new material
-                if (token.equals("newmtl")) {
-                  material = new Material(tok.nextToken());
-                  materials.add(material);
-                } else {
-                  Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
-                          "parse_mtl() error: line not recognized >> " + line, file.getName());
-                }
-
-                break;
-              case 'N': /* Ni or Ns */
-
-                switch (line.charAt(1)) {
-                  case 'i': /* ignored */
-
-                    break;
-                  case 's':
-                    tok = new StringTokenizer(line, " ");
-                    tok.nextToken(); //ignores Ns
-                    material.shininess = Float.parseFloat(tok.nextToken());
-
-                    /*
-                     * wavefront shininess is from [0,
-                     * 1000], so scale for OpenGL
-                     */
-                    material.shininess = (material.shininess / 1000.0f) * 128.0f;
-                    break;
-                  default:
+                  //creating the new material
+                  if (token.equals("newmtl")) {
+                    material = new Material(tok.nextToken());
+                    materials.add(material);
+                  } else {
                     Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
                             "parse_mtl() error: line not recognized >> " + line, file.getName());
-                }
-                break;
-
-              case 'K': /* Kd, Ks, or Ka */
-
-                switch (line.charAt(1)) {
-                  case 'd':
-                    tok = new StringTokenizer(line, " ");
-                    tok.nextToken(); //ignores Kd
-                    material.diffuse[0] = Float.parseFloat(tok.nextToken());
-                    material.diffuse[1] = Float.parseFloat(tok.nextToken());
-                    material.diffuse[2] = Float.parseFloat(tok.nextToken());
-                    break;
-                  case 's':
-                    tok = new StringTokenizer(line, " ");
-                    tok.nextToken(); //ignores Ks
-                    material.specular[0] = Float.parseFloat(tok.nextToken());
-                    material.specular[1] = Float.parseFloat(tok.nextToken());
-                    material.specular[2] = Float.parseFloat(tok.nextToken());
-                    break;
-                  case 'a':
-                    tok = new StringTokenizer(line, " ");
-                    tok.nextToken(); //ignores Ka
-                    material.ambient[0] = Float.parseFloat(tok.nextToken());
-                    material.ambient[1] = Float.parseFloat(tok.nextToken());
-                    material.ambient[2] = Float.parseFloat(tok.nextToken());
-                    break;
-                  default:
-                    Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
-                            "parse_mtl() error: line not recognized >> " + line, file.getName());
-                    break;
-                }
-                break;
-              case 'm': /* map_Kd */
-
-                tok = new StringTokenizer(line, " ");
-                token = tok.nextToken(); //ignores map_Kd
-
-                if (token.equals("map_Kd")) {
-                  name = tok.nextToken();
-
-                  //loading the texture data
-                  Texture texture = findTexture(name);
-                  if (texture == null) {
-                    file = new File(pathname.getParent() + "/" + name);
-
-                    if (file.exists()) {
-                      BufferedImage image = ImageIO.read(file);
-                      ImageUtil.flipImageVertically(image); //vertically flip the image
-
-                      texture = new Texture(name);
-                      texture.texturedata = AWTTextureIO.newTexture(GLProfile.get(GLProfile.GL3), image, true);
-                      texture.texturedata.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
-                      texture.texturedata.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-                      textures.add(texture);
-                    } else {
-                      Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
-                              "parse_mtl() error: texture file not found " + name, file.getName());
-                    }
                   }
 
-                  material.texture = texture;
-                } else {
+                  break;
+                }
+                case 'N': /* Ni or Ns */
+                {
+                  switch (line.charAt(1)) {
+                    case 'i': /* ignored */
+
+                      break;
+                    case 's':
+                      tok = new StringTokenizer(line, " ");
+                      tok.nextToken(); //ignores Ns
+                      material.shininess = Float.parseFloat(tok.nextToken());
+
+                      /*
+                       * wavefront shininess is from [0,
+                       * 1000], so scale for OpenGL
+                       */
+                      material.shininess = (material.shininess / 1000.0f) * 128.0f;
+                      break;
+                    default:
+                      Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
+                              "parse_mtl() error: line not recognized >> " + line, file.getName());
+                  }
+                  break;
+                }
+                case 'K': /* Kd, Ks, or Ka */
+                {
+                  switch (line.charAt(1)) {
+                    case 'd':
+                      tok = new StringTokenizer(line, " ");
+                      tok.nextToken(); //ignores Kd
+                      material.diffuse[0] = Float.parseFloat(tok.nextToken());
+                      material.diffuse[1] = Float.parseFloat(tok.nextToken());
+                      material.diffuse[2] = Float.parseFloat(tok.nextToken());
+                      break;
+                    case 's':
+                      tok = new StringTokenizer(line, " ");
+                      tok.nextToken(); //ignores Ks
+                      material.specular[0] = Float.parseFloat(tok.nextToken());
+                      material.specular[1] = Float.parseFloat(tok.nextToken());
+                      material.specular[2] = Float.parseFloat(tok.nextToken());
+                      break;
+                    case 'a':
+                      tok = new StringTokenizer(line, " ");
+                      tok.nextToken(); //ignores Ka
+                      material.ambient[0] = Float.parseFloat(tok.nextToken());
+                      material.ambient[1] = Float.parseFloat(tok.nextToken());
+                      material.ambient[2] = Float.parseFloat(tok.nextToken());
+                      break;
+                    default:
+                      Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
+                              "parse_mtl() error: line not recognized >> " + line, file.getName());
+                      break;
+                  }
+                  break;
+                }
+                case 'm': /* map_Kd */
+                {
+                  tok = new StringTokenizer(line, " ");
+                  token = tok.nextToken(); //ignores map_Kd
+
+                  if (token.equals("map_Kd")) {
+                    name = tok.nextToken();
+
+                    //loading the texture data
+                    Texture texture = findTexture(name);
+                    if (texture == null) {
+                      file = new File(pathname.getParent() + "/" + name);
+
+                      if (file.exists()) {
+                        BufferedImage image = ImageIO.read(file);
+                        ImageUtil.flipImageVertically(image); //vertically flip the image
+
+                        texture = new Texture(name);
+                        texture.texturedata = AWTTextureIO.newTexture(GLProfile.get(GLProfile.GL3), image, true);
+                        texture.texturedata.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+                        texture.texturedata.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+                        textures.add(texture);
+                      } else {
+                        Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
+                                "parse_mtl() error: texture file not found " + name, file.getName());
+                      }
+                    }
+
+                    material.texture = texture;
+                  } else {
+                    Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
+                            "parse_mtl() error: line not recognized >> " + line, file.getName());
+                  }
+
+                  break;
+                }
+                case 'd':
+                {
+                    
+                    tok = new StringTokenizer(line, " ");
+                    tok.nextToken(); // ignores d
+                    material.transparency = Float.parseFloat(tok.nextToken());
+                    System.out.println("d = "+material.transparency);
+                    Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING, "Encontrou d!");
+                }
+                default:
                   Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
                           "parse_mtl() error: line not recognized >> " + line, file.getName());
-                }
-
-                break;
-              default:
-                Logger.getLogger(JWavefrontModel.class.getName()).log(Level.WARNING,
-                        "parse_mtl() error: line not recognized >> " + line, file.getName());
-                break;
+                  break;
             }
           }
         }
@@ -772,6 +784,7 @@ public class JWavefrontModel {
           material.setDiffuseColor(group.material.diffuse);
           material.setSpecularColor(group.material.specular);
           material.setSpecularExponent(group.material.shininess);
+          material.setTransparency(group.material.transparency);
           material.bind();
         }
 

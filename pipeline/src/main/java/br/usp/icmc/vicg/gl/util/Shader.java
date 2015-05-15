@@ -67,7 +67,7 @@ public class Shader {
   }
 
   public int getUniformLocation(String varName) {
-    int location = gl.glGetUniformLocation(handle, varName);
+    int location = gl.glGetUniformLocation(handle, varName);    
     if (location < 0) {
       System.err.println(varName + " uniform not found.");
       return -1;

@@ -19,6 +19,7 @@ public class Material {
         this.diffuse = new float[]{0.8f, 0.8f, 0.8f, 1.0f};
         this.ambient = new float[]{0.2f, 0.2f, 0.2f, 1.0f};
         this.specular = new float[]{0.0f, 0.0f, 0.0f, 1.0f};
+        this.transparency = 1.0f; // totally opaque
     }
 
     public void dump() {
@@ -27,16 +28,17 @@ public class Material {
         System.out.println("Ks: (" + specular[0] + "," + specular[1] + "," + specular[2] + "," + specular[3] + ")");
         System.out.println("Ka: (" + ambient[0] + "," + ambient[1] + "," + ambient[2] + "," + ambient[3] + ")");
         System.out.println("Ns: " + shininess);
-
+        System.out.println("d: " + transparency);
         if(texture != null) {
             texture.dump();
         }
     }
 
-    public String name; // name of material
-    public float diffuse[]; // diffuse component
-    public float ambient[]; // ambient component
-    public float specular[]; // specular component
-    public float shininess; // specular exponent
-    public Texture texture; //texture
+    public String name;         // name of material
+    public float transparency;  // Transparência (new)
+    public float diffuse[];     // diffuse component
+    public float ambient[];     // ambient component
+    public float specular[];    // specular component
+    public float shininess;     // specular exponent
+    public Texture texture;     //texture
 }
