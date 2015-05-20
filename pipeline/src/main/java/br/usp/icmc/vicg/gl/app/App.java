@@ -1,6 +1,8 @@
 
 package br.usp.icmc.vicg.gl.app;
 
+import br.usp.icmc.vicg.gl.util.GameManager;
+import br.usp.icmc.vicg.gl.util.Point3D;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -24,13 +26,20 @@ import javax.swing.event.MouseInputAdapter;
 
 public class App extends MouseInputAdapter implements GLEventListener, KeyListener {
     private final float ASPECT_RATIO = 1.83f; // width/height
+    private final boolean GAME_MANAGER = true;// Runs the game manager
     private final float DNEAR = 0.01f;
     private final float DFAR = 1000f;
     private final float THETA = 60;
+
+    /**
+     *  It's static to allow the GameManager to change this value
+     */
+    public static float SPEED = 5.0f;
     
     private final Pipeline pipeline;
     private final Scene scene;
-
+    private GameManager gameManager;
+    
     private float alpha;
     private float beta;
     private float delta;
@@ -38,31 +47,44 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
     
     
   ///Tests:
-    double x = 0;   
-    double y = 0;
-    double z = 0;
-  
   
     private float zoomFactor, dx, dy, tx, ty;
     private Point dragStart, dragEnd;
     private double counter;
-    private double angle;
+    private double camAngle;
     private float goForward;
+    private float forwardX;
+    private float forwardZ;
     private float goRight;
     
+    Point3D Po;
+    Point3D Pref;
+    Point3D PoCurr;
     
     public App() {
         pipeline = new Pipeline();
         scene = new Scene(pipeline);
-
+        Po = new Point3D(0.0f, 0.5f, -2.0f); // Posição inicial da câmera:
+        Pref = new Point3D(0.0f, 0.5f, -1.0f); // Pref inicial:
+        PoCurr = new Point3D(Po.x, Po.y, Po.z);
+        
+        if (GAME_MANAGER){
+            gameManager = new GameManager(pipeline);
+            gameManager.setVisible(true);
+        }
+        
         alpha = 0;
         beta = 0;
         delta = 5;
         
         dx = dy = 0;
         zoomFactor = 1.0f;
-        goForward = -2.0f;
-        goRight = 0f;        
+        goForward = 0.0f;
+        forwardX = 0.0f;
+        forwardZ = 0.0f;
+        goRight = 0.0f;
+        camAngle = 0.0f;
+        
     }
 
     @Override
@@ -94,21 +116,29 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
         // Limpa o frame buffer com a cor definida
         gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
         
+        /// Projection View
         pipeline.getMatrix(Pipeline.MatrixType.PROJECTION).loadIdentity();
         pipeline.getMatrix(Pipeline.MatrixType.PROJECTION).perspective(THETA, ASPECT_RATIO, DNEAR, DFAR); 
         
+        /// Setting the View Matrix
+        // To avoid to process twice or more, the same thing, we calculate the current camera point here:
+        Pref.x = PoCurr.x + ((float) Math.sin(Math.toRadians(camAngle)));
+        Pref.z = PoCurr.z + ((float) Math.cos(Math.toRadians(camAngle)));
         pipeline.getMatrix(Pipeline.MatrixType.VIEW).loadIdentity();
-        
         pipeline.getMatrix(Pipeline.MatrixType.VIEW).lookAt(
-                goRight, 0.0f, goForward-2.0f,       // Po
-                goRight, alpha, goForward,           // Pref
-                0, 1, 0);                            // View up
-//        pipeline.getMatrix(Pipeline.MatrixType.VIEW).scale(, 1, 1);
-        pipeline.getMatrix(Pipeline.MatrixType.VIEW).rotate(-beta, 0, 1.0f, 0);
-        pipeline.getMatrix(Pipeline.MatrixType.VIEW).rotate(-alpha, 1.0f, 0, 0);
-
+                PoCurr.x, PoCurr.y, PoCurr.z,                 // Po
+                Pref.x, (Pref.y + alpha), Pref.z,          // Pref, alpha: olha p/ cima/baixo
+                0, 1, 0);      
+        // View up
+//        pipeline.getMatrix(Pipeline.MatrixType.VIEW).translate(PoCurr.x, PoCurr.y, PoCurr.z);
+//        
+//        
+//        
+//        pipeline.getMatrix(Pipeline.MatrixType.VIEW).rotate(-beta, 0, 1.0f, 0);// beta -> right left
+//        pipeline.getMatrix(Pipeline.MatrixType.VIEW).translate(-PoCurr.x, -PoCurr.y, -PoCurr.z);
+//        pipeline.getMatrix(Pipeline.MatrixType.VIEW).rotate(-alpha, 1.0f, 0, 0);
         scene.display(gl);
-
+        
         // Força execução das operações declaradas
         gl.glFlush();
     }
@@ -128,44 +158,47 @@ public class App extends MouseInputAdapter implements GLEventListener, KeyListen
     */ 
     @Override
     public void keyPressed(KeyEvent e) {
-
-        switch (e.getKeyCode()) {
+         switch (e.getKeyCode()) {
             case KeyEvent.VK_PAGE_UP://faz zoom-in
-                delta = delta * 0.809f;
+                delta = delta * 0.809f * SPEED;
                 break;
             case KeyEvent.VK_PAGE_DOWN://faz zoom-out
-                delta = delta * 1.1f;
+                delta = delta * 1.1f * SPEED;
                 break;
-            case KeyEvent.VK_UP://
-                alpha = alpha + 0.01f;
+            case KeyEvent.VK_UP:    // Look up
+                alpha = alpha + 0.05f * SPEED;
                 break;
-            case KeyEvent.VK_DOWN://
-                alpha = alpha - 0.01f;
+            case KeyEvent.VK_DOWN:  // Look down
+                alpha = alpha - 0.05f * SPEED;
                 break;
-            case KeyEvent.VK_LEFT://gira sobre o eixo-y
-                beta = beta - 5;
+            case KeyEvent.VK_LEFT:  // Turns the camera to the left
+                camAngle += 0.05f * SPEED;
                 break;
-            case KeyEvent.VK_RIGHT://gira sobre o eixo-y
-                beta = beta + 5;
+            case KeyEvent.VK_RIGHT: // Turns the camera to the left
+                camAngle -= 0.05f * SPEED;
                 break;
-            case KeyEvent.VK_W: //avança a camera = puxa o mundo
+            case KeyEvent.VK_W: // Go forward
             {
-                goForward += 0.05;
+                goForward = 0.05f * SPEED;
+                PoCurr.x += ((float) Math.sin(Math.toRadians(camAngle))) * goForward; // correto
+                PoCurr.z += ((float) Math.cos(Math.toRadians(camAngle))) * goForward;
                 break;
             }
-            case KeyEvent.VK_S: //recua a camera = empurra o mundo
+            case KeyEvent.VK_S: // Go backward
             {
-                goForward -= 0.03;
+                goForward = 0.05f * SPEED;
+                PoCurr.x -= ((float) Math.sin(Math.toRadians(camAngle))) * goForward; // Errado
+                PoCurr.z -= ((float) Math.cos(Math.toRadians(camAngle))) * goForward; // Errado
                 break;
             }
             case KeyEvent.VK_A: //recua a camera = empurra o mundo
             {
-                goRight += 0.03;
+                goRight += 0.05f * SPEED;
                 break;
             }
             case KeyEvent.VK_D: //recua a camera = empurra o mundo
             {
-                goRight -= 0.03;
+                goRight -= 0.05f * SPEED;
                 break;
             }
         }
