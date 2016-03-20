@@ -1,0 +1,13 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl Material.002
+Ns 64
+Ka 0.100000 0.100000 0.100000
+Kd 0.327680 0.327680 0.327680
+Ks 0.250000 0.250000 0.250000
+Ni 4.000000
+d 1.000000
+# il - is leaf - informa que é folha:
+il 
+map_Kd palm_leafs.png
